@@ -3,79 +3,559 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Widget</title>
+    <title>B3Raven Ticker</title>
     <style>
-        html, body {
+        body {
+            font-family: sans-serif;
+            background-color: black;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('https://images3.alphacoders.com/139/1390854.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #e9e9e9;
             margin: 0;
             padding: 0;
-            height: 100%;
-            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-        .tradingview-widget-container {
-            height: 100vh;
+
+        .datetime {
+            font-size: 40px;
+            color: #e9e9e9;
+            margin: 30px;
             width: 100%;
+            max-width: 800px;
+            font-weight: bold;
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: #202020;
+            text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.5);
+            outline: 5px solid #121212;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        .main-container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .stock-column {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .B3raven-logo {
+            width: 400px;
+            height: 400px;
+            text-align: center;
+            justify-content: center;
+            overflow: fit;
+            cursor: pointer; 
+        }
+
+        .B3raven-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: fill;
+        }
+
+        .stock-card {
+            display: flex;
+            background-color: #1b1b1b;
+            border-radius: 8px;
+            height: 150px;
+            width: 685px;
+            position: relative;
+            outline: 5px solid #121212;
+            overflow: hidden;
+        }
+
+        .stock-logo {
+            width: 150px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #202020;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            z-index: 20;
+        }
+
+        .stock-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .stock-symbol {
+            font-size: 50px;
+            font-weight: bold;
+            color: #e9e9e9;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            width: 22%;
+            background-color: #202020;
+            z-index: 20;
+            position: relative;
+        }
+
+        .stock-data {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 46%;
+            background-color: #e9e9e9;
+            position: relative;
+        }
+
+        .stock-price {
+            font-size: 75px;
+            font-weight: bold;
+            text-align: center;
+            color: black;
+            text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .stock-change {
+            font-size: 25px;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 1);
+        }
+		
+        .indicator {
+            width: 43px;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            outline: 5px solid #121212;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .positive {
+            color: #00FF00;
+        }
+
+        .negative {
+            color: #FF0000;
+        }
+
+        .positive-indicator {
+            background-color: #00FF00;
+        }
+
+        .negative-indicator {
+            background-color: #FF0000;
+        }
+
+		.small-logo {
+			width: 200px;
+			height: 200px;
+			margin: -58px;
+            overflow: fill;
+			cursor: pointer;
+			display: none;
+			z-index: 1001;
+			overflow: visible;
+		}
+
+		.small-logo img {
+			max-width: 100%;
+			max-height: 100%;
+			object-fit: fill;
+		}
+
+        .tradingview-widget-container {
+            width: 100%;
+            height: 100%;
+			max-width: 1500px;
+			max-height: 800px;
+            display: none;
+            overflow: hidden;
+        }
+
+        .tradingview-widget-container__widget {
+            width: 100%;
+            height: 100%;
+        }
+
+        .AdvChart-widget-container {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 320 px; /* Position after the stock symbol */
+            right: 0;
+            bottom: 0;
+            background-color: #1b1b1b;
+            z-index: 15;
+        }
+
+        /* Flash animation for price updates */
+        @keyframes flash {
+            0% { opacity: 1; }
+            50% { opacity: 0; color: white; background-color: white; }
+            100% { opacity: 1; }
+        }
+
+        .flash-animation {
+            animation: flash 0.5s ease-in-out;
         }
     </style>
 </head>
 <body>
-	<!-- TradingView Widget BEGIN -->
-	<div class="tradingview-widget-container">
-	  <div class="tradingview-widget-container__widget"></div>
-	  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js" async>
-	  {
-	  "symbols": [
-		[
-		  "NASDAQ:NVDA|1D"
-		],
-		[
-		  "AMEX:SCHG|1M"
-		],
-		[
-		  "AMEX:XLV|1M"
-		],
-		[
-		  "NASDAQ:MSFT|1D"
-		]
-	  ],
-	  "chartOnly": false,
-	  "width": "100%",
-	  "height": "100%",
-	  "locale": "en",
-	  "colorTheme": "dark",
-	  "autosize": true,
-	  "showVolume": false,
-	  "showMA": false,
-	  "hideDateRanges": false,
-	  "hideMarketStatus": false,
-	  "hideSymbolLogo": false,
-	  "scalePosition": "right",
-	  "scaleMode": "Normal",
-	  "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-	  "fontSize": "15",
-	  "noTimeScale": false,
-	  "valuesTracking": "1",
-	  "changeMode": "price-and-percent",
-	  "chartType": "area",
-	  "maLineColor": "#2962FF",
-	  "maLineWidth": 1,
-	  "maLength": 9,
-	  "headerFontSize": "large",
-	  "gridLineColor": "rgba(240, 243, 250, 0.15)",
-	  "backgroundColor": "rgba(0, 0, 0, 1)",
-	  "lineWidth": 2,
-	  "lineType": 0,
-	  "dateRanges": [
-		"1d|1",
-		"1m|30",
-		"3m|60",
-		"12m|1D",
-		"60m|1W",
-		"all|1M"
-	  ],
-	  "timeHoursFormat": "12-hours"
-	}
-	  </script>
+    <div class="datetime" id="date-time"></div>
+
+    <div class="main-container" id="main-container">
+        <div class="stock-column left-column">
+            <div class="stock-card" id="card-NVDA">
+                <div class="stock-logo">
+                    <img src="" alt="NVDA logo">
+                </div>
+                <div class="stock-symbol">NVDA</div>
+                <div class="stock-data">
+                    <div class="stock-price" id="price-NVDA">$0.00</div>
+                    <div class="stock-change" id="change-NVDA">1 day + 0.00%</div>
+                </div>
+                <div class="indicator" id="indicator-NVDA"></div>
+                <!-- AdvChart1 Widget BEGIN -->
+                <div class="AdvChart-widget-container" id="chart-NVDA">
+                  <div class="AdvChart-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                  {
+                  "width": "368", "height": "150", "symbol": "NASDAQ:NVDA",
+                  "interval": "1", "timezone": "Etc/UTC", "theme": "dark", "style": "3", "locale": "en",
+                  "hide_top_toolbar": true, "hide_legend": true, "allow_symbol_change": true, "save_image": false, "calendar": false, "hide_volume": true
+                  }
+                  </script>
+                </div>
+                <!-- AdvChart1 Widget END -->
+            </div>
+
+            <div class="stock-card" id="card-SCHG">
+                <div class="stock-logo">
+                    <img src="" alt="SCHG logo">
+                </div>
+                <div class="stock-symbol">SCHG</div>
+                <div class="stock-data">
+                    <div class="stock-price" id="price-SCHG">$0.00</div>
+                    <div class="stock-change" id="change-SCHG">1 day + 0.00%</div>
+                </div>
+                <div class="indicator" id="indicator-SCHG"></div>
+                <!-- AdvChart2 Widget BEGIN -->
+                <div class="AdvChart-widget-container" id="chart-SCHG">
+                  <div class="AdvChart-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                  {
+                  "width": "368", "height": "150", "symbol": "AMEX:SCHG",
+                  "interval": "1", "timezone": "Etc/UTC", "theme": "dark", "style": "3", "locale": "en",
+                  "hide_top_toolbar": true, "hide_legend": true, "allow_symbol_change": true, "save_image": false, "calendar": false, "hide_volume": true
+                  }
+                  </script>
+                </div>
+                <!-- AdvChart2 Widget END -->
+            </div>
+        </div>
+
+        <div class="center-column">
+            <div class="B3raven-logo">
+                <img src="https://lh3.googleusercontent.com/pw/AP1GczM3Zwuzd-TULFT9jb6_6cuCffJ4uhzfx3GPgxdRCRE28PzS8_bYigwTpcBKS8BQBieW8_Hfv_MSf--Sz3Z4S0KLoN0A_v39C1EPKoqspNFYDvUwHHaBGQfsSPnVmj09-8L3hFduoyEDWCoZMuQjS121=s0" alt="B3raven logo">
+            </div>
+        </div>
+
+        <div class="stock-column right-column">
+            <div class="stock-card" id="card-MSFT">
+                <div class="stock-logo">
+                    <img src="" alt="MSFT logo">
+                </div>
+                <div class="stock-symbol">MSFT</div>
+                <div class="stock-data">
+                    <div class="stock-price" id="price-MSFT">$0.00</div>
+                    <div class="stock-change" id="change-MSFT">1 day + 0.00%</div>
+                </div>
+                <div class="indicator" id="indicator-MSFT"></div>
+                <!-- AdvChart3 Widget BEGIN -->
+                <div class="AdvChart-widget-container" id="chart-MSFT">
+                  <div class="AdvChart-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                  {
+                  "width": "368", "height": "150", "symbol": "NASDAQ:MSFT",
+                  "interval": "1", "timezone": "Etc/UTC", "theme": "dark", "style": "3", "locale": "en",
+                  "hide_top_toolbar": true, "hide_legend": true, "allow_symbol_change": true, "save_image": false, "calendar": false, "hide_volume": true
+                  }
+                  </script>
+                </div>
+                <!-- AdvChart3 Widget END -->
+            </div>
+            <div class="stock-card" id="card-HIMS">
+                <div class="stock-logo">
+                    <img src="" alt="HIMS logo">
+                </div>
+                <div class="stock-symbol">HIMS</div>
+                <div class="stock-data">
+                    <div class="stock-price" id="price-HIMS">$0.00</div>
+                    <div class="stock-change" id="change-HIMS">1 day + 0.00%</div>
+                </div>
+                <div class="indicator" id="indicator-HIMS"></div>
+                <!-- AdvChart4 Widget BEGIN -->
+                <div class="AdvChart-widget-container" id="chart-HIMS">
+                  <div class="AdvChart-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                  {
+                  "width": "368", "height": "150", "symbol": "NYSE:HIMS",
+                  "interval": "1", "timezone": "Etc/UTC", "theme": "dark", "style": "3", "locale": "en",
+                  "hide_top_toolbar": true, "hide_legend": true, "allow_symbol_change": true, "save_image": false, "calendar": false, "hide_volume": true
+                  }
+                  </script>
+                </div>
+                <!-- AdvChart4 Widget END -->
+            </div>
+        </div>
+    </div>
+
+	<div class="small-logo" id="small-logo">
+		<img src="https://i.postimg.cc/y6Y4rbMJ/B3-Raven-Ticker-Logo-Playground.png" alt="Small B3raven logo">
 	</div>
-	<!-- TradingView Widget END -->
+
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container" id="tradingview-widget">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js" async>
+            {
+                "symbols": [
+                    ["NASDAQ:NVDA|1D"],
+                    ["NASDAQ:MSFT|1D"],
+                    ["AMEX:SCHG|1M"],
+                    ["NYSE:HIMS|1D"]
+                ],
+                "chartOnly": false,
+                "width": "70%",
+                "height": "550",
+                "locale": "en",
+                "colorTheme": "dark",
+                "autosize": true,
+                "showVolume": false,
+                "showMA": false,
+                "hideDateRanges": false,
+                "hideMarketStatus": false,
+                "hideSymbolLogo": false,
+                "scalePosition": "left",
+                "scaleMode": "large",
+                "fontFamily": "sans-serif",
+                "fontSize": "12",
+                "noTimeScale": false,
+                "valuesTracking": "1",
+                "changeMode": "price-and-percent",
+                "chartType": "area",
+                "maLineColor": "#2962FF",
+                "maLineWidth": 1,
+                "maLength": 9,
+                "headerFontSize": "large",
+                "lineWidth": 2,
+                "lineType": 0,
+                "dateRanges": ["1d|1","1m|30","3m|60","12m|1D","60m|1W","all|1M"]
+            }
+        </script>
+    </div>
+    <!-- TradingView Widget END -->
+
+    <script>
+        // Stock symbols to track
+        const stocks = ["NVDA", "SCHG", "HIMS", "MSFT"];
+        const apiKey = "cv0n60pr01qo8sshpj4gcv0n60pr01qo8sshpj50"; // Your Finnhub API key
+        const updateInterval = 15000; // Update every 15 seconds (15,000 ms)
+
+        // Get references to the elements
+        const logo = document.querySelector('.B3raven-logo');
+		const smallLogo = document.getElementById('small-logo');
+        const dateTimeDiv = document.getElementById('date-time');
+        const mainContainer = document.getElementById('main-container');
+        const tradingViewWidget = document.getElementById('tradingview-widget');
+        let widgetVisible = false; // Flag to track widget visibility
+
+        // Function to fetch stock data
+        async function fetchStockData(symbol) {
+            try {
+                const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
+                if (!response.ok) throw new Error("Failed to fetch stock data");
+                const data = await response.json();
+                return {
+                    symbol,
+                    currentPrice: data.c,
+                    percentChange: data.dp,
+                };
+            } catch (error) {
+                console.error(`Error fetching data for ${symbol}:`, error);
+                return null;
+            }
+        }
+
+        // Function to get logo URL for a stock
+        function getLogoUrl(symbol) {
+            // You can replace these with actual logo URLs or use a service that provides them
+            const logoUrls = {
+                'NVDA': 'https://logo.clearbit.com/nvidia.com',
+                'SCHG': 'https://logo.clearbit.com/schwab.com',
+                'HIMS': 'https://logo.clearbit.com/forhims.com',
+                'MSFT': 'https://logo.clearbit.com/microsoft.com',
+            };
+
+            return logoUrls[symbol] || 'https://via.placeholder.com/150x150?text=' + symbol;
+        }
+
+        // Function to update the stock display
+        async function updateStocks() {
+            for (const symbol of stocks) {
+                const stockData = await fetchStockData(symbol);
+                if (stockData) {
+                    const priceElement = document.getElementById(`price-${symbol}`);
+                    const changeElement = document.getElementById(`change-${symbol}`);
+                    const indicatorElement = document.getElementById(`indicator-${symbol}`);
+                    const logoElement = document.querySelector(`#card-${symbol} .stock-logo img`);
+                    
+                    // Store current price to check if it changed
+                    const currentPrice = parseFloat(priceElement.textContent.replace('$', ''));
+                    
+                    // Set new price
+                    priceElement.textContent = `$${stockData.currentPrice.toFixed(2)}`;
+                    
+                                        // Update change percentage
+                    const percentClass = stockData.percentChange >= 0 ? "positive" : "negative";
+                    changeElement.className = `stock-change ${percentClass}`;
+                    changeElement.textContent = `1 day ${stockData.percentChange >= 0 ? '+' : ''}${stockData.percentChange.toFixed(2)}%`;
+                    
+                    // Update indicator color
+                    indicatorElement.className = `indicator ${stockData.percentChange >= 0 ? 'positive-indicator' : 'negative-indicator'}`;
+                    
+                    // Add flash animation regardless of price change
+                    changeElement.classList.remove('flash-animation');
+                    indicatorElement.classList.remove('flash-animation');
+                    
+                    // Trigger reflow to restart animation
+                    void changeElement.offsetWidth;
+                    void indicatorElement.offsetWidth;
+                    
+                    // Add animation class
+                    changeElement.classList.add('flash-animation');
+                    indicatorElement.classList.add('flash-animation');
+                    
+                    // Update Logo
+                    logoElement.src = getLogoUrl(symbol);
+                    logoElement.alt = `${symbol} logo`;
+                }
+            }
+        }
+
+        // Function to update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeString = now.toLocaleString("en-US", {
+                weekday: "short",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            });
+            document.getElementById("date-time").textContent = dateTimeString;
+        }
+
+        // Function to show the widget
+        function showWidget() {
+            tradingViewWidget.style.display = 'block';
+            dateTimeDiv.style.display = 'none';
+            mainContainer.style.display = 'none';
+            smallLogo.style.display = 'block';
+            widgetVisible = true;
+        }
+
+        // Function to hide the widget
+        function hideWidget() {
+            tradingViewWidget.style.display = 'none';
+            dateTimeDiv.style.display = 'flex';
+            mainContainer.style.display = 'flex';
+            smallLogo.style.display = 'none';
+            widgetVisible = false;
+        }
+
+        // Function to setup chart toggle functionality
+        function setupChartToggle() {
+            // For each stock, set up the toggle functionality
+            stocks.forEach(symbol => {
+                const logoElement = document.querySelector(`#card-${symbol} .stock-logo`);
+                const chartElement = document.getElementById(`chart-${symbol}`);
+                const stockDataElement = document.querySelector(`#card-${symbol} .stock-data`);
+                const indicatorElement = document.getElementById(`indicator-${symbol}`);
+                
+                // Track chart visibility state
+                let chartVisible = false;
+                
+                // Add click event to the logo
+                logoElement.addEventListener('click', () => {
+                    if (!chartVisible) {
+                        // Show chart, hide stock data and indicator
+                        chartElement.style.display = 'block';
+                        stockDataElement.style.visibility = 'hidden';
+                        indicatorElement.style.visibility = 'hidden';
+                        chartVisible = true;
+                    } else {
+                        // Hide chart, show stock data and indicator
+                        chartElement.style.display = 'none';
+                        stockDataElement.style.visibility = 'visible';
+                        indicatorElement.style.visibility = 'visible';
+                        chartVisible = false;
+                    }
+                });
+            });
+        }
+
+        // Initialize the app
+        function init() {
+            // Add event listener to the logo
+            logo.addEventListener('click', showWidget);
+            smallLogo.addEventListener('click', hideWidget);
+
+            // Set up chart toggle functionality
+            setupChartToggle();
+
+            updateDateTime();
+            updateStocks();
+            setInterval(updateDateTime, 1000); // Update time every second
+            setInterval(updateStocks, updateInterval); // Update stocks every 15sec
+        }
+
+        init();
+    </script>
 </body>
 </html>
