@@ -98,16 +98,18 @@
         }
 
         .indicator {
-            transition: background-color 0.3s ease;
             border-left: 1.0vw solid #121212;
+            transition: background-color 0.4s ease;
+            background: #333; /* Default neutral color */
         }
 
-        .positive-indicator {
-            background: #FF4500;
+        /* More specific selectors to override the base indicator class */
+        .indicator.positive-indicator {
+            background: #22C55E !important;
         }
 
-        .negative-indicator {
-            background: #FF0000;
+        .indicator.negative-indicator {
+            background: #EF4444 !important;
         }
 
         .navigation {
@@ -274,7 +276,7 @@
         // Stock symbols to track
         const stocks = ["NVDA", "SCHG", "HIMS", "MSFT"];
         const apiKey = "cv0n60pr01qo8sshpj4gcv0n60pr01qo8sshpj50"; // Your Finnhub API key
-        const updateInterval = 15000; // Update every 15 seconds (changed from 1000ms)
+        const updateInterval = 15000; // Update every 15 seconds
         
         let currentStockIndex = 0;
         let stockData = {};
@@ -350,8 +352,13 @@
                 stockChangeEl.className = `stock-change ${percentClass}`;
                 stockChangeEl.textContent = `1 day ${data.percentChange >= 0 ? '+' : ''}${data.percentChange.toFixed(2)}%`;
 
-                // Update indicator color
-                indicatorEl.className = `indicator ${data.percentChange >= 0 ? 'positive-indicator' : 'negative-indicator'}`;
+                // Update indicator color - Clear previous classes first, then add new ones
+                indicatorEl.className = 'indicator';
+                if (data.percentChange >= 0) {
+                    indicatorEl.classList.add('positive-indicator');
+                } else {
+                    indicatorEl.classList.add('negative-indicator');
+                }
 
                 // Update counter
                 currentStockEl.textContent = currentStockIndex + 1;
