@@ -78,23 +78,26 @@
             color: #000;
             margin-bottom: 3vh;
             transition: opacity 0.3s ease;
-            text-shadow: 0.3vw 0.3vw 0.5vw rgba(0, 0, 0, 0.3);
+            text-shadow: 0.5vw 0.5vw 0.5vw rgba(0, 0, 0, 0.5);
             line-height: 0.9;
         }
 
         .stock-change {
             font-size: 4.5vw;
             font-weight: 600;
-            transition: opacity 0.3s ease;
-            text-shadow: 0.2vw 0.2vw 0.4vw rgba(0, 0, 0, 0.6);
+            transition: opacity 0.3s ease, color 0.3s ease;
+            /* Removed text-shadow that was interfering with color */
         }
 
-        .positive {
-            color: #FF4500;
+        /* More specific color classes to ensure they apply */
+        .stock-change.positive {
+            color: #00FF00 !important;
+            text-shadow: 0.5vw 0.5vw 0.5vw rgba(0, 0, 0, 0.5);
         }
 
-        .negative {
-            color: #FF0000;
+        .stock-change.negative {
+            color: #FF0000 !important;
+            text-shadow: 0.5vw 0.5vw 0.5vw rgba(0, 0, 0, 0.5);
         }
 
         .indicator {
@@ -105,11 +108,11 @@
 
         /* More specific selectors to override the base indicator class */
         .indicator.positive-indicator {
-            background: #22C55E !important;
+            background: #00FF00 !important;
         }
 
         .indicator.negative-indicator {
-            background: #EF4444 !important;
+            background: #FF0000 !important;
         }
 
         .navigation {
@@ -347,14 +350,24 @@
                 // Update price
                 stockPriceEl.textContent = `$${data.currentPrice.toFixed(2)}`;
 
-                // Update change percentage
-                const percentClass = data.percentChange >= 0 ? "positive" : "negative";
-                stockChangeEl.className = `stock-change ${percentClass}`;
-                stockChangeEl.textContent = `1 day ${data.percentChange >= 0 ? '+' : ''}${data.percentChange.toFixed(2)}%`;
+                // Update change percentage with proper class clearing and setting
+                const isPositive = data.percentChange >= 0;
+                
+                // Clear all classes first
+                stockChangeEl.className = 'stock-change';
+                
+                // Add the appropriate color class
+                if (isPositive) {
+                    stockChangeEl.classList.add('positive');
+                } else {
+                    stockChangeEl.classList.add('negative');
+                }
+                
+                stockChangeEl.textContent = `1 day ${isPositive ? '+' : ''}${data.percentChange.toFixed(2)}%`;
 
                 // Update indicator color - Clear previous classes first, then add new ones
                 indicatorEl.className = 'indicator';
-                if (data.percentChange >= 0) {
+                if (isPositive) {
                     indicatorEl.classList.add('positive-indicator');
                 } else {
                     indicatorEl.classList.add('negative-indicator');
