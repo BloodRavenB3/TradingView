@@ -86,10 +86,8 @@
             font-size: 4.5vw;
             font-weight: 600;
             transition: opacity 0.3s ease, color 0.3s ease;
-            /* Removed text-shadow that was interfering with color */
         }
 
-        /* More specific color classes to ensure they apply */
         .stock-change.positive {
             color: #00FF00 !important;
             text-shadow: 0.5vw 0.5vw 0.5vw rgba(0, 0, 0, 0.5);
@@ -103,10 +101,9 @@
         .indicator {
             border-left: 1.0vw solid #121212;
             transition: background-color 0.4s ease;
-            background: #333; /* Default neutral color */
+            background: #333;
         }
 
-        /* More specific selectors to override the base indicator class */
         .indicator.positive-indicator {
             background: #00FF00 !important;
         }
@@ -164,6 +161,69 @@
             white-space: nowrap;
         }
 
+        /* Auto Cycle Toggle Styles - Positioned in bottom left */
+        .auto-cycle-container {
+            position: absolute;
+            bottom: 1vh;
+            left: 2vw;
+            display: flex;
+            align-items: center;
+            gap: 1vw;
+            z-index: 10;
+        }
+
+        .auto-cycle-label {
+            color: #666;
+            font-size: 1.8vw;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 5vw;
+            height: 2.5vh;
+            min-width: 50px;
+            min-height: 25px;
+            background: #333;
+            border-radius: 2vh;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: 0.15vw solid #555;
+        }
+
+        .toggle-switch.active {
+            background: #00AA00;
+            border-color: #00CC00;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 50%;
+            left: 0.3vw;
+            width: 1.8vh;
+            height: 1.8vh;
+            min-width: 18px;
+            min-height: 18px;
+            background: white;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            left: calc(100% - 1.8vh - 0.3vw);
+            background: #fff;
+        }
+
+        .toggle-switch:hover {
+            border-color: #777;
+        }
+
+        .toggle-switch.active:hover {
+            border-color: #00FF00;
+        }
+
         /* Loading state */
         .loading {
             opacity: 0.6;
@@ -191,6 +251,10 @@
             .stock-change {
                 font-size: 5vw;
             }
+            
+            .auto-cycle-label {
+                font-size: 2.2vw;
+            }
         }
 
         @media (min-aspect-ratio: 2/1) {
@@ -214,6 +278,10 @@
             .stock-change {
                 font-size: 4vw;
             }
+            
+            .auto-cycle-label {
+                font-size: 1.5vw;
+            }
         }
 
         /* Very small screens */
@@ -226,6 +294,16 @@
             
             .stock-counter {
                 font-size: 3vw;
+            }
+            
+            .auto-cycle-label {
+                font-size: 2.5vw;
+            }
+            
+            .auto-cycle-container {
+                bottom: 0.5vh;
+                left: 1vw;
+                gap: 0.5vw;
             }
         }
 
@@ -246,6 +324,10 @@
             .stock-logo {
                 width: min(20vw, 500px);
                 height: min(20vw, 500px);
+            }
+            
+            .auto-cycle-label {
+                font-size: min(1.8vw, 45px);
             }
         }
     </style>
@@ -275,14 +357,26 @@
         <button class="nav-button" id="next-btn">▶</button>
     </div>
 
+    <!-- Auto Cycle Toggle - Now in bottom left corner -->
+    <div class="auto-cycle-container">
+        <label class="auto-cycle-label" for="auto-cycle-toggle">Auto Cycle</label>
+        <div class="toggle-switch" id="auto-cycle-toggle">
+            <div class="toggle-slider"></div>
+        </div>
+    </div>
+
     <script>
         // Stock symbols to track
         const stocks = ["NVDA", "SCHG", "HIMS", "MSFT"];
         const apiKey = "cv0n60pr01qo8sshpj4gcv0n60pr01qo8sshpj50"; // Your Finnhub API key
         const updateInterval = 15000; // Update every 15 seconds
+        const autoCycleInterval = 300000; // Auto cycle every 5 minutes (300000ms)
         
         let currentStockIndex = 0;
         let stockData = {};
+        let isAutoCycleEnabled = localStorage.getItem('autoCycleEnabled') === 'true';
+        let autoCycleTimer = null;
+        let lastManualNavigation = 0;
 
         // Get references to the elements
         const stockSymbolEl = document.getElementById('stock-symbol');
@@ -294,9 +388,13 @@
         const totalStocksEl = document.getElementById('total-stocks');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
+        const autoCycleToggle = document.getElementById('auto-cycle-toggle');
 
         // Set total stocks count
         totalStocksEl.textContent = stocks.length;
+
+        // Initialize auto cycle toggle state
+        updateAutoCycleToggle();
 
         // Function to get logo URL for a stock
         function getLogoUrl(symbol) {
@@ -404,29 +502,89 @@
             updateDisplay();
         }
 
+        // Auto cycle functions
+        function startAutoCycle() {
+            if (autoCycleTimer) {
+                clearInterval(autoCycleTimer);
+            }
+            
+            if (isAutoCycleEnabled) {
+                autoCycleTimer = setInterval(() => {
+                    // Only auto-advance if no recent manual navigation (within last 10 seconds)
+                    const timeSinceManualNav = Date.now() - lastManualNavigation;
+                    if (timeSinceManualNav > 10000) {
+                        goToNextStock(false); // false indicates automatic navigation
+                    }
+                }, autoCycleInterval);
+            }
+        }
+
+        function stopAutoCycle() {
+            if (autoCycleTimer) {
+                clearInterval(autoCycleTimer);
+                autoCycleTimer = null;
+            }
+        }
+
+        function toggleAutoCycle() {
+            isAutoCycleEnabled = !isAutoCycleEnabled;
+            localStorage.setItem('autoCycleEnabled', isAutoCycleEnabled.toString());
+            updateAutoCycleToggle();
+            
+            if (isAutoCycleEnabled) {
+                startAutoCycle();
+            } else {
+                stopAutoCycle();
+            }
+        }
+
+        function updateAutoCycleToggle() {
+            if (isAutoCycleEnabled) {
+                autoCycleToggle.classList.add('active');
+            } else {
+                autoCycleToggle.classList.remove('active');
+            }
+        }
+
         // Navigation functions
-        function goToPreviousStock() {
+        function goToPreviousStock(isManual = true) {
+            if (isManual) {
+                lastManualNavigation = Date.now();
+            }
             currentStockIndex = (currentStockIndex - 1 + stocks.length) % stocks.length;
             updateDisplay();
         }
 
-        function goToNextStock() {
+        function goToNextStock(isManual = true) {
+            if (isManual) {
+                lastManualNavigation = Date.now();
+            }
             currentStockIndex = (currentStockIndex + 1) % stocks.length;
             updateDisplay();
         }
 
         // Event listeners
-        prevBtn.addEventListener('click', goToPreviousStock);
-        nextBtn.addEventListener('click', goToNextStock);
+        prevBtn.addEventListener('click', () => goToPreviousStock(true));
+        nextBtn.addEventListener('click', () => goToNextStock(true));
+        autoCycleToggle.addEventListener('click', toggleAutoCycle);
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') goToPreviousStock();
-            if (e.key === 'ArrowRight') goToNextStock();
+            if (e.key === 'ArrowLeft') goToPreviousStock(true);
+            if (e.key === 'ArrowRight') goToNextStock(true);
+            if (e.key === 'Space') {
+                e.preventDefault();
+                toggleAutoCycle();
+            }
         });
 
         // Initialize and start updates
         fetchAllStockData();
+        
+        // Start auto cycle if enabled
+        if (isAutoCycleEnabled) {
+            startAutoCycle();
+        }
         
         // Update only the current stock every 15 seconds
         setInterval(updateCurrentStock, updateInterval);
