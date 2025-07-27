@@ -22,9 +22,9 @@
 
         .main-container {
             display: grid;
-            grid-template-columns: 1fr 1.8fr 60px;
-            width: 100%;
-            height: calc(100vh - 8vh);
+            grid-template-columns: 30vw 60vw 10vw;
+            width: 100vw;
+            height: 92vh;
         }
 
         .logo-section {
@@ -34,33 +34,33 @@
             justify-content: center;
             align-items: center;
             color: white;
-            padding: 2vh;
+            padding: 3vh 2vw;
         }
 
         .stock-logo {
-            width: min(25vw, 40vh);
-            height: min(25vw, 40vh);
-            max-width: 300px;
-            max-height: 300px;
-            background: #000;
-            border-radius: min(1vw, 15px);
+            width: 20vw;
+            height: 20vw;
+            background: black;
+            border-radius: 1.5vw;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 4vh;
+            position: relative;
         }
 
         .stock-logo img {
-            width: 100%;
-            height: 100%;
-            border-radius: min(1vw, 15px);
+            width: 95%;
+            height: 95%;
+            border-radius: 1vw;
             object-fit: contain;
         }
 
         .stock-symbol {
-            font-size: clamp(3rem, 8vw, 6rem);
+            font-size: 6vw;
             font-weight: bold;
             color: #e0e0e0;
+            letter-spacing: 0.2vw;
         }
 
         .price-section {
@@ -69,27 +69,28 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 4vh 2vw;
+            padding: 4vh 3vw;
         }
 
         .stock-price {
-            font-size: clamp(4rem, 12vw, 9rem);
-            font-weight: bold;
+            font-size: 12vw;
+            font-weight: 900;
             color: #000;
             margin-bottom: 3vh;
             transition: opacity 0.3s ease;
-            text-shadow: 0.2vw 0.2vw 0.3vw rgba(0, 0, 0, 0.5);
+            text-shadow: 0.3vw 0.3vw 0.5vw rgba(0, 0, 0, 0.3);
+            line-height: 0.9;
         }
 
         .stock-change {
-            font-size: clamp(2rem, 6vw, 4rem);
+            font-size: 4.5vw;
             font-weight: 600;
             transition: opacity 0.3s ease;
-            text-shadow: 0.2vw 0.2vw 0.3vw rgba(0, 0, 0, 0.75);
+            text-shadow: 0.2vw 0.2vw 0.4vw rgba(0, 0, 0, 0.6);
         }
 
         .positive {
-            color: #00FF00;
+            color: #FF4500;
         }
 
         .negative {
@@ -98,11 +99,11 @@
 
         .indicator {
             transition: background-color 0.3s ease;
-            outline: max(5px, 1vw) solid #121212;
+            border-left: 1.0vw solid #121212;
         }
 
         .positive-indicator {
-            background: #00FF00;
+            background: #FF4500;
         }
 
         .negative-indicator {
@@ -112,9 +113,8 @@
         .navigation {
             position: absolute;
             bottom: 0;
-            width: 100%;
+            width: 100vw;
             height: 8vh;
-            min-height: 50px;
             background: #000;
             display: flex;
             justify-content: center;
@@ -123,15 +123,15 @@
         }
 
         .nav-button {
-            width: min(8vw, 80px);
-            height: min(6vh, 60px);
-            min-width: 50px;
-            min-height: 35px;
+            width: 6vw;
+            height: 5vh;
+            min-width: 40px;
+            min-height: 30px;
             background: #333;
-            border: 2px solid #555;
-            border-radius: min(1vw, 8px);
+            border: 0.2vw solid #555;
+            border-radius: 0.8vw;
             color: white;
-            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-size: 2.5vw;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -154,7 +154,7 @@
 
         .stock-counter {
             color: #666;
-            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            font-size: 2vw;
             margin: 0 2vw;
             white-space: nowrap;
         }
@@ -164,31 +164,83 @@
             opacity: 0.6;
         }
 
-        /* Media queries for extreme aspect ratios */
-        @media (max-aspect-ratio: 4/3) {
+        /* Maintain proportions on extreme aspect ratios */
+        @media (max-aspect-ratio: 1/1) {
             .main-container {
-                grid-template-columns: 1fr 1.5fr 50px;
+                grid-template-columns: 35vw 58vw 7vw;
             }
             
             .stock-logo {
-                width: min(20vw, 30vh);
-                height: min(20vw, 30vh);
+                width: 25vw;
+                height: 25vw;
+            }
+            
+            .stock-symbol {
+                font-size: 7vw;
+            }
+            
+            .stock-price {
+                font-size: 14vw;
+            }
+            
+            .stock-change {
+                font-size: 5vw;
             }
         }
 
-        @media (min-aspect-ratio: 21/9) {
+        @media (min-aspect-ratio: 2/1) {
             .main-container {
-                grid-template-columns: 1fr 2.2fr 70px;
+                grid-template-columns: 25vw 70vw 5vw;
+            }
+            
+            .stock-logo {
+                width: 18vw;
+                height: 18vw;
+            }
+            
+            .stock-symbol {
+                font-size: 5vw;
+            }
+            
+            .stock-price {
+                font-size: 10vw;
+            }
+            
+            .stock-change {
+                font-size: 4vw;
             }
         }
 
-        @media (max-width: 768px) {
-            .navigation {
-                gap: 2vw;
+        /* Very small screens */
+        @media (max-width: 480px) {
+            .nav-button {
+                min-width: 35px;
+                min-height: 25px;
+                font-size: 3vw;
             }
             
             .stock-counter {
-                margin: 0 1vw;
+                font-size: 3vw;
+            }
+        }
+
+        /* Very large screens - prevent elements from getting too big */
+        @media (min-width: 2560px) {
+            .stock-price {
+                font-size: min(12vw, 300px);
+            }
+            
+            .stock-symbol {
+                font-size: min(6vw, 150px);
+            }
+            
+            .stock-change {
+                font-size: min(4.5vw, 115px);
+            }
+            
+            .stock-logo {
+                width: min(20vw, 500px);
+                height: min(20vw, 500px);
             }
         }
     </style>
